@@ -78,15 +78,41 @@ def _get_custom_css() -> str:
     [data-testid="stDecoration"] {{display: none !important;}}
     [data-testid="stStatusWidget"] {{display: none !important;}}
     [data-testid="stHeader"] {{display: none !important;}}
+
+    /* Community Cloudの "Hosted with Streamlit" / "Created by" バッジ */
+    [data-testid="stViewerBadge"],
+    [data-testid="stCreatedByBadge"],
+    [data-testid="stHostedWithBadge"],
+    [data-testid="stAppViewerBadge"],
+    [data-testid="stBottomBlockContainer"] > div:last-child,
     .viewerBadge_container__r5tak,
     .styles_viewerBadge__CvC9N,
     .viewerBadge_link__qRIco,
-    [class*="viewerBadge"] {{
+    [class*="viewerBadge"],
+    [class*="_viewerBadge"],
+    [class*="_profileContainer"],
+    [class*="_createdBy"],
+    [class*="_hostedWith"],
+    a[href*="streamlit.io/cloud"],
+    a[href*="share.streamlit.io"],
+    a[href*="streamlit.io"][target="_blank"] {{
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
     }}
+
     /* Manage app ボタン（右下） */
     [data-testid="manage-app-button"],
-    [data-testid="stAppDeployButton"] {{
+    [data-testid="stAppDeployButton"],
+    div[class*="_terminalButton"] {{
+        display: none !important;
+    }}
+
+    /* 念のため、iframe最下部の固定要素を一掃 */
+    .stApp > div:last-child:not([data-testid]) {{
         display: none !important;
     }}
 
