@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="健康経営ROI試算ツール - 従業員数と平均年収から、損失コストと投資対効果を試算します">
+<title>健康経営ROI試算ツール</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Oswald:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary-dark: #2D3337;
+  --secondary: #738084;
+  --accent: #E4006F;
+  --gold: #C5BDAB;
+  --bg-dark: #535F62;
+  --bg-light: #EFEFEF;
+  --bg-white: #F8F8F8;
+  --white: #FFFFFF;
+  --border: #F1F1F1;
+  --text: #2D3337;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  color: var(--text);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* ============ Header ============ */
+.page-header {
+  text-align: center;
+  padding: 1.5rem 0 1rem;
+  margin-bottom: 2rem;
+}
+.page-header h1 {
+  font-weight: 700;
+  font-size: clamp(1.5rem, 5vw, 2.4rem);
+  color: var(--primary-dark);
+  letter-spacing: 0.05em;
+}
+.page-header p {
+  font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+  color: var(--secondary);
+  margin-top: 0.5rem;
+  letter-spacing: 0.03em;
+}
+.accent-line {
+  width: 100px;
+  height: 4px;
+  background: var(--accent);
+  margin: 1rem auto 0;
+}
+
+/* ============ Section ============ */
+.section-header {
+  text-align: center;
+  padding: 1.5rem 0 1rem;
+  margin: 1rem 0;
+}
+.section-header .en {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
+  color: var(--secondary);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.section-header .ja {
+  display: block;
+  font-weight: 700;
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  color: var(--primary-dark);
+  margin-top: 0.3rem;
+}
+.section-header .line {
+  width: 100px;
+  height: 4px;
+  background: var(--accent);
+  margin: 1rem auto 0;
+}
+
+/* ============ Input ============ */
+.field {
+  margin-bottom: 1.25rem;
+}
+.field label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--primary-dark);
+  margin-bottom: 0.4rem;
+}
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--bg-light);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--text);
+  background: var(--white);
+  transition: all 0.2s;
+}
+input[type="text"]:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 560px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ============ Metric Cards ============ */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+@media (max-width: 720px) {
+  .grid-3 { grid-template-columns: 1fr; }
+}
+
+.metric-card {
+  background: var(--primary-dark);
+  color: var(--white);
+  border-radius: 4px;
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+.metric-card:hover { transform: translateY(-2px); }
+.metric-card.accent { background: var(--accent); }
+.metric-card.success { background: var(--primary-dark); }
+.metric-card.warning { background: var(--accent); }
+.metric-card .label {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.metric-card .value {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+.metric-card .value.large {
+  font-size: clamp(1.8rem, 6vw, 2.8rem);
+}
+.metric-card .sub {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  margin-top: 0.4rem;
+}
+
+/* ============ Table ============ */
+.breakdown-wrap {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 480px;
+}
+.breakdown-table thead th {
+  background: var(--bg-light);
+  color: var(--secondary);
+  font-weight: 700;
+  padding: 0.8rem;
+  text-align: center;
+}
+.breakdown-table tbody td,
+.breakdown-table tbody th {
+  border-bottom: 1px solid var(--bg-light);
+  padding: 0.8rem;
+  text-align: center;
+}
+.breakdown-table tbody th {
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+.breakdown-table tbody td { color: var(--secondary); }
+.breakdown-table .accent-text {
+  color: var(--accent);
+  font-weight: 700;
+}
+.breakdown-table .total-row td,
+.breakdown-table .total-row th {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.breakdown-table .total-row .total-value {
+  font-size: 1.15rem;
+  color: var(--accent);
+}
+
+/* ============ Slider ============ */
+.slider-wrap {
+  margin-top: 0.4rem;
+}
+.slider-wrap .slider-value {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  color: var(--accent);
+  margin-right: 0.5rem;
+}
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-light);
+  border-radius: 3px;
+  outline: none;
+  margin-top: 0.4rem;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(228,0,111,0.4);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 0;
+}
+
+/* ============ Summary ============ */
+textarea#summary {
+  width: 100%;
+  min-height: 320px;
+  padding: 1rem;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg-white);
+  border: 1px solid var(--bg-light);
+  border-radius: 4px;
+  resize: vertical;
+  white-space: pre-wrap;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+button {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.8rem 1.5rem;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+button.primary {
+  background: var(--primary-dark);
+  color: var(--white);
+}
+button.primary:hover { background: var(--bg-dark); transform: translateY(-1px); }
+button.secondary {
+  background: var(--secondary);
+  color: var(--white);
+}
+button.secondary:hover { background: #5b6669; }
+button.copied {
+  background: var(--accent) !important;
+}
+
+/* ============ Footer ============ */
+.footer {
+  background: var(--secondary);
+  color: var(--white);
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 3rem;
+  border-radius: 4px 4px 0 0;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Page header -->
+  <header class="page-header">
+    <h1>健康経営ROI試算ツール</h1>
+    <p>従業員数と平均年収から、健康経営の損失コストと投資対効果を試算します</p>
+    <div class="accent-line"></div>
+  </header>
+
+  <!-- INPUT -->
+  <section>
+    <div class="section-header">
+      <span class="en">INPUT</span>
+      <span class="ja">試算条件の入力</span>
+      <div class="line"></div>
+    </div>
+    <div class="field">
+      <label for="companyName">企業名（任意）</label>
+      <input type="text" id="companyName" placeholder="株式会社〇〇">
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="employees">従業員数</label>
+        <input type="number" id="employees" value="100" min="1" max="1000000" step="10">
+      </div>
+      <div class="field">
+        <label for="salary">平均年収（円）</label>
+        <input type="number" id="salary" value="5000000" min="1000000" max="50000000" step="100000">
+      </div>
+    </div>
+  </section>
+
+  <!-- LOSS COST -->
+  <section>
+    <div class="section-header">
+      <span class="en">LOSS COST</span>
+      <span class="ja">損失コスト試算</span>
+      <div class="line"></div>
+    </div>
+    <div class="grid-3">
+      <div class="metric-card">
+        <div class="label">Presenteeism</div>
+        <div class="value" id="mPresenteeism">¥0</div>
+        <div class="sub" id="mPresenteeismSub">年収の11% × 100名</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Absenteeism</div>
+        <div class="value" id="mAbsenteeism">¥0</div>
+        <div class="sub" id="mAbsenteeismSub">年収の2% × 100名</div>
+      </div>
+      <div class="metric-card accent">
+        <div class="label">Total Loss / Year</div>
+        <div class="value" id="mTotalLoss">¥0</div>
+        <div class="sub">プレゼンティーズム + アブセンティーズム</div>
+      </div>
+    </div>
+
+    <div class="breakdown-wrap">
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>計算式</th>
+            <th>1人あたり</th>
+            <th>全社合計</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>プレゼンティーズム</th>
+            <td id="tPresenteeismFormula">¥5,000,000 × 11%</td>
+            <td id="tPresenteeismPerPerson">¥550,000</td>
+            <td class="accent-text" id="tPresenteeismTotal">¥55,000,000</td>
+          </tr>
+          <tr>
+            <th>アブセンティーズム</th>
+            <td id="tAbsenteeismFormula">¥5,000,000 × 2%</td>
+            <td id="tAbsenteeismPerPerson">¥100,000</td>
+            <td class="accent-text" id="tAbsenteeismTotal">¥10,000,000</td>
+          </tr>
+          <tr class="total-row">
+            <th>合計</th>
+            <td>年収 × 13%</td>
+            <td id="tTotalPerPerson">¥650,000</td>
+            <td class="total-value" id="tTotalAll">¥65,000,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ROI -->
+  <section>
+    <div class="section-header">
+      <span class="en">ROI</span>
+      <span class="ja">投資対効果の試算</span>
+      <div class="line"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="investment">健康経営への投資額（年間・円）</label>
+        <input type="number" id="investment" value="3250000" min="0" max="10000000000" step="100000">
+      </div>
+      <div class="field">
+        <label for="improvement">損失改善率：<span class="slider-value" id="sliderVal">10</span>%</label>
+        <div class="slider-wrap">
+          <input type="range" id="improvement" min="1" max="50" value="10">
+        </div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="metric-card">
+        <div class="label">Improvement</div>
+        <div class="value" id="mImprovement">¥0</div>
+        <div class="sub" id="mImprovementSub">損失額 × 改善率10%</div>
+      </div>
+      <div class="metric-card" id="mNetBenefitCard">
+        <div class="label">Net Benefit</div>
+        <div class="value" id="mNetBenefit">¥0</div>
+        <div class="sub">改善見込額 − 投資額</div>
+      </div>
+      <div class="metric-card" id="mRoiCard">
+        <div class="label">ROI</div>
+        <div class="value large" id="mRoi">0.0%</div>
+        <div class="sub" id="mRoiSub">投資対効果</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section>
+    <div class="section-header">
+      <span class="en">Proposal Summary</span>
+      <span class="ja">提案用サマリー</span>
+      <div class="line"></div>
+    </div>
+    <textarea id="summary" readonly></textarea>
+    <div class="button-group">
+      <button class="primary" id="copyBtn">クリップボードにコピー</button>
+      <button class="secondary" id="downloadBtn">テキストファイルで保存</button>
+    </div>
+  </section>
+
+  <footer class="footer">健康経営ROI試算ツール</footer>
+</div>
+
+<script>
+const PRESENTEEISM_RATE = 0.11;
+const ABSENTEEISM_RATE = 0.02;
+
+const el = (id) => document.getElementById(id);
+const yen = (n) => '¥' + Math.round(n).toLocaleString('ja-JP');
+const num = (n) => Math.round(n).toLocaleString('ja-JP');
+
+function calc() {
+  const company = el('companyName').value.trim();
+  const employees = Number(el('employees').value) || 0;
+  const salary = Number(el('salary').value) || 0;
+  const investment = Number(el('investment').value) || 0;
+  const improvement = Number(el('improvement').value) || 0;
+
+  // Loss cost
+  const presenteeism = salary * PRESENTEEISM_RATE * employees;
+  const absenteeism = salary * ABSENTEEISM_RATE * employees;
+  const totalLoss = presenteeism + absenteeism;
+
+  // ROI
+  const improvementAmount = totalLoss * (improvement / 100);
+  const netBenefit = improvementAmount - investment;
+  const roi = investment > 0 ? (netBenefit / investment) * 100 : 0;
+
+  // --- Metric cards: LOSS
+  el('mPresenteeism').textContent = yen(presenteeism);
+  el('mAbsenteeism').textContent = yen(absenteeism);
+  el('mTotalLoss').textContent = yen(totalLoss);
+  el('mPresenteeismSub').textContent = `年収の11% × ${num(employees)}名`;
+  el('mAbsenteeismSub').textContent = `年収の2% × ${num(employees)}名`;
+
+  // --- Breakdown table
+  el('tPresenteeismFormula').textContent = `${yen(salary)} × 11%`;
+  el('tPresenteeismPerPerson').textContent = yen(salary * PRESENTEEISM_RATE);
+  el('tPresenteeismTotal').textContent = yen(presenteeism);
+  el('tAbsenteeismFormula').textContent = `${yen(salary)} × 2%`;
+  el('tAbsenteeismPerPerson').textContent = yen(salary * ABSENTEEISM_RATE);
+  el('tAbsenteeismTotal').textContent = yen(absenteeism);
+  el('tTotalPerPerson').textContent = yen(salary * (PRESENTEEISM_RATE + ABSENTEEISM_RATE));
+  el('tTotalAll').textContent = yen(totalLoss);
+
+  // --- ROI cards
+  el('mImprovement').textContent = yen(improvementAmount);
+  el('mImprovementSub').textContent = `損失額 × 改善率${improvement}%`;
+  el('mNetBenefit').textContent = yen(netBenefit);
+  el('mRoi').textContent = `${roi.toFixed(1)}%`;
+  el('mRoiSub').textContent = roi > 0 ? '投資対効果あり' : (roi === 0 ? '—' : '投資超過');
+  el('sliderVal').textContent = improvement;
+
+  // Color for net benefit / ROI
+  el('mNetBenefitCard').classList.toggle('accent', netBenefit < 0);
+  el('mRoiCard').classList.toggle('accent', roi < 0);
+
+  // --- Summary text
+  const label = company ? `（${company}様）` : '';
+  const summaryText =
+`【健康経営ROI試算${label}】
+
+■ 試算条件
+・従業員数: ${num(employees)}名
+・平均年収: ${yen(salary)}
+
+■ 現状の推定損失額（年間）
+・プレゼンティーズム損失（年収×11%）: ${yen(presenteeism)}
+・アブセンティーズム損失（年収×2%）: ${yen(absenteeism)}
+・合計: ${yen(totalLoss)}
+・1人あたり: ${yen(salary * (PRESENTEEISM_RATE + ABSENTEEISM_RATE))}
+
+■ 施策導入後の効果試算
+・投資額: ${yen(investment)}
+・改善率: ${improvement}%
+・改善見込額: ${yen(improvementAmount)}
+・純効果額: ${yen(netBenefit)}
+・ROI: ${roi.toFixed(1)}%`;
+
+  el('summary').value = summaryText;
+}
+
+// Event listeners
+['companyName','employees','salary','investment','improvement'].forEach(id => {
+  const n = el(id);
+  n.addEventListener('input', calc);
+  n.addEventListener('change', calc);
+});
+
+// Copy button
+el('copyBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(el('summary').value);
+    const btn = el('copyBtn');
+    const original = btn.textContent;
+    btn.textContent = 'コピーしました ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.classList.remove('copied');
+    }, 2000);
+  } catch (e) {
+    el('summary').select();
+    document.execCommand('copy');
+  }
+});
+
+// Download button
+el('downloadBtn').addEventListener('click', () => {
+  const company = el('companyName').value.trim() || '企業名';
+  const blob = new Blob([el('summary').value], {type: 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ROI試算_${company}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// Initial render
+calc();
+</script>
+</body>
+</html>
