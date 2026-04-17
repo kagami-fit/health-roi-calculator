@@ -69,6 +69,27 @@ def _get_custom_css() -> str:
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Oswald:wght@500&display=swap');
 
+    /* Streamlitのデフォルトヘッダー・フッター・バッジを非表示 */
+    #MainMenu {{visibility: hidden !important;}}
+    footer {{visibility: hidden !important; display: none !important;}}
+    header {{visibility: hidden !important;}}
+    .stDeployButton {{display: none !important;}}
+    [data-testid="stToolbar"] {{display: none !important;}}
+    [data-testid="stDecoration"] {{display: none !important;}}
+    [data-testid="stStatusWidget"] {{display: none !important;}}
+    [data-testid="stHeader"] {{display: none !important;}}
+    .viewerBadge_container__r5tak,
+    .styles_viewerBadge__CvC9N,
+    .viewerBadge_link__qRIco,
+    [class*="viewerBadge"] {{
+        display: none !important;
+    }}
+    /* Manage app ボタン（右下） */
+    [data-testid="manage-app-button"],
+    [data-testid="stAppDeployButton"] {{
+        display: none !important;
+    }}
+
     .stApp {{
         font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
         color: {COLORS["text"]};
